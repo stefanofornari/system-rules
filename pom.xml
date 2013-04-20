@@ -8,7 +8,7 @@
 		<version>7</version>
 	</parent>
 
-	<groupId>com.github.stefanbirkner</groupId>
+	<groupId>ste.test.junit</groupId>
 	<artifactId>system-rules</artifactId>
 	<version>1.3.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -47,9 +47,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git://github.com/stefanbirkner/system-rules.git</connection>
-		<developerConnection>scm:git:git@github.com:stefanbirkner/system-rules.git</developerConnection>
-		<url>https://github.com/stefanbirkner/system-rules/</url>
+		<connection>scm:git:git://github.com/stefanofornari/system-rules.git</connection>
+		<developerConnection>scm:git:git@github.com:stefanofornari/system-rules.git</developerConnection>
+		<url>https://github.com/stefanofornari/system-rules/</url>
 	</scm>
 
 	<properties>
@@ -74,20 +74,6 @@
 				<configuration>
 					<forkMode>always</forkMode>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.4</version>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
