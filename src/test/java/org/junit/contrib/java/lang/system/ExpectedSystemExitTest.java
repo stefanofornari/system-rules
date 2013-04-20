@@ -11,9 +11,11 @@ import static org.junit.Assert.fail;
 import static org.junit.rules.ExpectedException.none;
 
 import java.security.Permission;
+import org.junit.Before;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.internal.NoExitSecurityManager;
 import org.junit.rules.ExpectedException;
 import org.junit.runners.model.Statement;
 
@@ -34,6 +36,11 @@ public class ExpectedSystemExitTest {
 	public final ExpectedException thrown = none().handleAssertionErrors();
 
 	private final ExpectedSystemExit rule = ExpectedSystemExit.none();
+        
+        @Before
+        public void setUp() {
+            NoExitSecurityManager.lastExitCalled = null;
+        }
 
 	@Test
 	public void succeedWithoutExit() throws Throwable {

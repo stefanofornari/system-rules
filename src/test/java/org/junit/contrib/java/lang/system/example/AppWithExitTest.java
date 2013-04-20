@@ -28,7 +28,7 @@ public class AppWithExitTest {
 		exit.expectSystemExitWithStatus(1);
 		exit.checkAssertionAfterwards(new Assertion() {
 			public void checkAssertion() {
-				assertEquals("exit ...", AppWithExit.message);
+				assertEquals(AppWithExit.TEST_EXIT, AppWithExit.message);
 			}
 		});
 		AppWithExit.doSomethingAndExit();
@@ -45,4 +45,10 @@ public class AppWithExitTest {
 		AppWithExit.doNothing();
 		// passes
 	}
+        
+        @Test
+        public void systemExitInThread() {
+            exit.expectSystemExit();
+            AppWithExit.doSomethingInThreadAndExit();
+        }
 }

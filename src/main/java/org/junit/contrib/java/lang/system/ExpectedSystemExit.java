@@ -16,46 +16,45 @@ import org.junit.runners.model.Statement;
 /**
  * The {@code ExpectedSystemExit} allows in-test specification of expected
  * {@code System.exit(...)} calls.
- * 
- * <p>
- * If your code calls {@code System.exit(),} then your test stops and doesn't
- * finish. The {@code ExpectedSystemExit} rule allows in-test specification of
- * expected {@code System.exit()} calls. Furthermore you cannot use JUnit's
- * assert methods because of the abnormal termination of your code. As a
- * substitute you can provide an {@code Assertion} object to the
+ *
+ * <p> If your code calls {@code System.exit(),} then your test stops and
+ * doesn't finish. The {@code ExpectedSystemExit} rule allows in-test
+ * specification of expected {@code System.exit()} calls. Furthermore you cannot
+ * use JUnit's assert methods because of the abnormal termination of your code.
+ * As a substitute you can provide an {@code Assertion} object to the
  * {@code ExpectedSystemExit} rule.
- * 
+ *
  * <pre>
  * public class AppWithExit {
  * 	public static String message;
- * 
+ *
  * 	public static int doSomethingAndExit() {
  * 		message = &quot;exit ...&quot;;
  * 		System.exit(1);
  * 	}
- * 
+ *
  * 	public static int doNothing() {
  * 	}
  * }
  * </pre>
- * 
+ *
  * <pre>
  * public void AppWithExitTest {
  *   &#064;Rule
  *   public final ExpectedSystemExit exit = ExpectedSystemExit.none();
- * 
+ *
  *   &#064;Test
  *   public void exits() {
  *     exit.expectSystemExit();
  *     AppWithExit.doSomethingAndExit();
  *   }
- * 
+ *
  *   &#064;Test
  *   public void exitsWithStatusCode1() {
  *     exit.expectSystemExitWithStatus(1);
  *     AppWithExit.doSomethingAndExit();
  *   }
- * 
+ *
  *   &#064;Test
  *   public void writesMessage() {
  *     exit.checkAssertionAfterwards(new Assertion() {
@@ -65,13 +64,13 @@ import org.junit.runners.model.Statement;
  *     });
  *     AppWithExit.doSomethingAndExit();
  *   }
- * 
+ *
  *   &#064;Test
  *   public void systemExitWithStatusCode1() {
  *     exit.expectSystemExitWithStatus(1);
  *     AppWithExit.doSomethingAndExit();
  *   }
- * 
+ *
  *   &#064;Test
  *   public void noSystemExit() {
  *     AppWithExit.doNothing();
@@ -80,71 +79,83 @@ import org.junit.runners.model.Statement;
  * }
  */
 public class ExpectedSystemExit implements TestRule {
-	public static ExpectedSystemExit none() {
-		return new ExpectedSystemExit();
-	}
 
-	private final Collection<Assertion> assertions = new ArrayList<Assertion>();
-	private boolean expectExit = false;
-	private Integer expectedStatus = null;
+    public static ExpectedSystemExit none() {
+        return new ExpectedSystemExit();
+    }
+    private final Collection<Assertion> assertions = new ArrayList<Assertion>();
+    private boolean expectExit = false;
+    private Integer expectedStatus = null;
 
-	private ExpectedSystemExit() {
-	}
+    private ExpectedSystemExit() {
+    }
 
-	public void expectSystemExitWithStatus(int status) {
-		expectSystemExit();
-		expectedStatus = status;
-	}
+    public void expectSystemExitWithStatus(int status) {
+        expectSystemExit();
+        expectedStatus = status;
+    }
 
-	public void expectSystemExit() {
-		expectExit = true;
-	}
+    public void expectSystemExit() {
+        expectExit = true;
+    }
 
-	public void checkAssertionAfterwards(Assertion assertion) {
-		assertions.add(assertion);
-	}
+    public void checkAssertionAfterwards(Assertion assertion) {
+        assertions.add(assertion);
+    }
 
-	public Statement apply(final Statement base, Description description) {
-		ProvideSecurityManager noExitSecurityManagerRule = createNoExitSecurityManagerRule();
-		Statement statement = createStatement(base);
-		return noExitSecurityManagerRule.apply(statement, description);
-	}
+    public Statement apply(final Statement base, Description description) {
+        ProvideSecurityManager noExitSecurityManagerRule = createNoExitSecurityManagerRule();
+        Statement statement = createStatement(base);
+        return noExitSecurityManagerRule.apply(statement, description);
+    }
 
-	private ProvideSecurityManager createNoExitSecurityManagerRule() {
-		NoExitSecurityManager noExitSecurityManager = new NoExitSecurityManager(
-				getSecurityManager());
-		return new ProvideSecurityManager(noExitSecurityManager);
-	}
+    private ProvideSecurityManager createNoExitSecurityManagerRule() {
+        NoExitSecurityManager noExitSecurityManager = new NoExitSecurityManager(
+                getSecurityManager());
+        return new ProvideSecurityManager(noExitSecurityManager);
+    }
 
-	private Statement createStatement(final Statement base) {
-		return new Statement() {
-			@Override
-			public void evaluate() throws Throwable {
-				try {
-					base.evaluate();
-					handleMissingSystemExit();
-				} catch (CheckExitCalled e) {
-					handleSystemExit(e);
-				}
-				checkAssertions();
-			}
-		};
-	}
+    private Statement createStatement(final Statement base) {
+        return new Statement() {
+            @Override
+            public void evaluate() throws Throwable {
+                try {
+                    base.evaluate();
+                } catch (CheckExitCalled e) {
+                    //
+                    // We've got the exception, but still we check lastExitCalled
+                    // and we catch it so that it is not thrown up
+                    //
+                }
+                
+                if (NoExitSecurityManager.lastExitCalled == null) {
+                    handleMissingSystemExit();
+                } else {
+                    handleSystemExit(NoExitSecurityManager.lastExitCalled);
+                }
 
-	private void handleMissingSystemExit() {
-		if (expectExit)
-			fail("System.exit has not been called.");
-	}
+                checkAssertions();
+            } 
+        };
+    }
 
-	private void handleSystemExit(CheckExitCalled e) {
-		if (!expectExit)
-			fail("Unexpected call of System.exit(" + e.getStatus() + ").");
-		else if (expectedStatus != null)
-			assertEquals("Wrong exit status", expectedStatus, e.getStatus());
-	}
+    private void handleMissingSystemExit() {
+        if (expectExit) {
+            fail("System.exit has not been called.");
+        }
+    }
 
-	private void checkAssertions() throws Exception {
-		for (Assertion assertion : assertions)
-			assertion.checkAssertion();
-	}
+    private void handleSystemExit(CheckExitCalled e) {
+        if (!expectExit) {
+            fail("Unexpected call of System.exit(" + e.getStatus() + ").");
+        } else if (expectedStatus != null) {
+            assertEquals("Wrong exit status", expectedStatus, e.getStatus());
+        }
+    }
+
+    private void checkAssertions() throws Exception {
+        for (Assertion assertion : assertions) {
+            assertion.checkAssertion();
+        }
+    }
 }
