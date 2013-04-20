@@ -1,15 +1,22 @@
 package org.junit.contrib.java.lang.system.example;
 
 import static org.junit.Assert.assertEquals;
+import org.junit.Before;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.Assertion;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.contrib.java.lang.system.internal.NoExitSecurityManager;
 
 public class AppWithExitTest {
 	@Rule
 	public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+        
+        @Before
+        public void setUp() {
+            NoExitSecurityManager.lastExitCalled = null;
+        }
 
 	@Test
 	public void exits() {
@@ -47,8 +54,9 @@ public class AppWithExitTest {
 	}
         
         @Test
-        public void systemExitInThread() {
+        public void systemExitInThread() throws Exception {
             exit.expectSystemExit();
             AppWithExit.doSomethingInThreadAndExit();
+            Thread.sleep(250);
         }
 }
