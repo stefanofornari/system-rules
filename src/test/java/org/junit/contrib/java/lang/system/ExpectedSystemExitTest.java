@@ -39,7 +39,7 @@ public class ExpectedSystemExitTest {
         
         @Before
         public void setUp() {
-            NoExitSecurityManager.lastExitCalled = null;
+            rule.reset();
         }
 
 	@Test

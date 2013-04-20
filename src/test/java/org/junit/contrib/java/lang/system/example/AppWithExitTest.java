@@ -15,7 +15,7 @@ public class AppWithExitTest {
         
         @Before
         public void setUp() {
-            NoExitSecurityManager.lastExitCalled = null;
+            exit.reset();
         }
 
 	@Test

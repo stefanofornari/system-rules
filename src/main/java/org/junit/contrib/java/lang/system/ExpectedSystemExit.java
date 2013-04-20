@@ -98,6 +98,10 @@ public class ExpectedSystemExit implements TestRule {
     public void expectSystemExit() {
         expectExit = true;
     }
+    
+    public void reset() {
+        NoExitSecurityManager.lastExitCalled = null;
+    }
 
     public void checkAssertionAfterwards(Assertion assertion) {
         assertions.add(assertion);
